@@ -7,10 +7,6 @@ class Game:
         self.num_players = num_players
         self.current_round = 0
         self.project_status = [False] * len(success_probabilities)
-        self.initialize_game()
-
-    def initialize_game(self):
-        print("Initializing game...")
         self.player_scores = [0] * self.num_players
         self.reset_projects()
 
@@ -21,78 +17,54 @@ class Game:
         total_allocated = sum(allocations)
         min_allocation = len(allocations)  # Each project must receive at least 1 token
 
-        # Ensure total allocation equals the number of players and each project has at least 1 token
         if total_allocated != self.num_players or total_allocated < min_allocation:
-            print(f"Invalid allocation by Player {player_id}. Must allocate exactly {self.num_players} tokens, with at least 1 to each project.")
             return False  # Invalid allocation
 
-        # Store the allocations for this player
         self.valuation_data['players'][player_id - 1]['allocations'] = allocations
-        print(f"Player {player_id} allocated tokens: {allocations}")
         return True  # Successful allocation
 
     def evaluate_projects(self):
+        scores = []
         for j in range(len(self.success_probabilities)):
             if random.random() < self.success_probabilities[j]:
                 self.project_status[j] = True
-                print(f"Project {j + 1} succeeded!")
-
                 for player_id, player in enumerate(self.valuation_data['players']):
                     if 'allocations' in player and player['allocations'][j] > 0:
                         score = player['valuations'][j] * player['allocations'][j]
                         self.player_scores[player_id] += score
-                        print(f"Player {player_id + 1} scored {score} points from Project {j + 1}.")
+                        scores.append((player_id + 1, score, j + 1))  # Store scores for the UI
+        return scores
 
     def play_round(self, human_allocations):
-        print(f"--- Round {self.current_round + 1} ---")
         human_player_id = 1
 
-        # Validate and allocate tokens for the human player
         if self.allocate_tokens(human_player_id, human_allocations):
-            # Allocate tokens for bot players
+            bot_scores = []
             for player_id in range(2, self.num_players + 1):
                 bot_allocations = self.get_bot_allocations(player_id)
                 self.allocate_tokens(player_id, bot_allocations)
 
-            # Evaluate projects based on all allocations
-            self.evaluate_projects()
+            scores = self.evaluate_projects()
             self.current_round += 1
             self.reset_projects()
+            return scores  # Return scores to update UI
 
-    def run_game(self):
-        max_rounds = 5
-        round_count = 0
-
-        while round_count < max_rounds:
-            self.play_round()  # Call play_round in an event-driven manner
-            round_count += 1
-
-            if self.check_single_player_left():
-                print("Game over! Only one player left with tokens.")
-                break
-
-        if round_count == max_rounds:
-            print("Game over! Maximum rounds reached.")
+        return None  # Indicate invalid allocation
 
     def check_single_player_left(self):
         active_players = 0
         for player in self.valuation_data['players']:
             if 'allocations' in player and sum(player['allocations']) > 0:
                 active_players += 1
-
         return active_players <= 1
 
     def get_bot_allocations(self, player_id):
         num_projects = len(self.success_probabilities)
-        total_tokens = self.num_players  # Total tokens to allocate is equal to the number of players
+        total_tokens = self.num_players
 
-        # Normalize success probabilities to sum to 1
         normalized_probabilities = [p / sum(self.success_probabilities) for p in self.success_probabilities]
-
-        # Allocate tokens based on normalized probabilities
         allocations = [int(total_tokens * prob) for prob in normalized_probabilities]
 
-        # Adjust the allocations to ensure the total equals the number of tokens
         while sum(allocations) < total_tokens:
             allocations[random.randint(0, num_projects - 1)] += 1
 
