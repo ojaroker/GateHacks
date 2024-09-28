@@ -46,16 +46,25 @@ class Game:
     def play_round(self):
         print(f"--- Round {self.current_round + 1} ---")
         human_player_id = 1
-        human_allocations = self.get_human_allocations()
-        self.allocate_tokens(human_player_id, human_allocations)
 
+        # Prompt user until valid allocations are made
+        while True:
+            human_allocations = self.get_human_allocations()
+            if self.allocate_tokens(human_player_id, human_allocations):
+                break  # Exit loop if the allocation was successful
+            else:
+                print(f"Invalid allocations by Player {human_player_id}. Please try again.")
+
+        # Allocate tokens for bot players
         for player_id in range(2, self.num_players + 1):
             bot_allocations = self.get_bot_allocations(player_id)
             self.allocate_tokens(player_id, bot_allocations)
 
+        # Evaluate projects based on all allocations
         self.evaluate_projects()
         self.current_round += 1
         self.reset_projects()
+
 
     def run_game(self):
         while True:
@@ -64,9 +73,6 @@ class Game:
                 print("Game over! Only one player left with tokens.")
                 break
 
-        print("Final Scores:")
-        for player_id, score in enumerate(self.player_scores):
-            print(f"Player {player_id + 1}: {score} points")
 
     def check_single_player_left(self):
         active_players = 0
