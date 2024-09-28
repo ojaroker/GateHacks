@@ -45,7 +45,7 @@ class Game:
                 self.allocate_tokens(player_id, bot_allocations)
 
             scores = self.evaluate_projects()
-            self.current_round += 1
+            self.current_round += 1  # Increment the round after evaluating
             self.reset_projects()
             return scores  # Return scores to update UI
 
