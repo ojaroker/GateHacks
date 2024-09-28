@@ -1,6 +1,6 @@
 # GateHacks
 
-Resource Allocation Scenario:
+Resource Allocation Game:
 
 Multiple players (user against AI bots) compete to allocate a fixed number of resources (e.g., tokens, items) among several distinct projects or tasks. Each player has a different valuation for each project, and they must decide how to allocate their resources to maximize their own payoff.
 
