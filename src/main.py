@@ -27,21 +27,57 @@ def main():
             print(f"Invalid input: {e}. Please enter a positive integer.")
 
     # Generate random success probabilities for each project
-    success_probabilities = [random.uniform(0.1, 1.0) for _ in range(num_projects)]  # Random probabilities between 0.1 and 1.0
+    success_probabilities = [round(random.uniform(0.1, 1.0), 2) for _ in range(num_projects)]  # Random probabilities rounded to 2 decimal places
+    
+    # Inform the user of the success probabilities
+    print("Success probabilities for each project:")
+    for i, p in enumerate(success_probabilities):
+        print(f"Project {i + 1}: {p}")
 
     # Load initial data
     with open('data/valuation_matrix.json', 'r') as file:
         valuation_data = json.load(file)
 
-    # Update the valuation matrix based on the number of players
-    valuation_data["players"] = valuation_data["players"][:num_bot_players + 1]  # Trim to the desired number of players
+    # Initialize the user's valuations
+    user_valuations = []
+    total_valuations = 0
 
-    # If there are not enough players in the existing data, add new players
-    for player_id in range(len(valuation_data["players"]) + 1, num_bot_players + 2):  # +2 because we are including the human player
-        new_player_valuations = [1 / num_projects for _ in range(num_projects)]  # Equal distribution
+    for i in range(num_projects):
+        while True:
+            try:
+                user_valuation = float(input(f"Enter your valuation for Project {i + 1}: "))
+                if user_valuation < 0:
+                    raise ValueError("Valuation cannot be negative.")
+                
+                # Calculate new total valuations
+                new_total_valuations = total_valuations + user_valuation
+                
+                if new_total_valuations > num_projects:
+                    print(f"The total valuations ({new_total_valuations}) cannot exceed the number of projects ({num_projects}). Please adjust your input.")
+                else:
+                    user_valuations.append(user_valuation)
+                    total_valuations = new_total_valuations  # Update the total
+                    break  # Exit loop if valid input is given
+            except ValueError as e:
+                print(f"Invalid input: {e}. Please enter a numeric value.")
+
+    # Set uniform valuations for bots
+    bot_valuation = 1.0  # Example: uniform valuation for each bot (could be adjusted as needed)
+
+    # Update the valuation matrix
+    valuation_data["players"] = []  # Reset existing players
+
+    # Add user's valuation
+    valuation_data["players"].append({
+        "id": 1,  # User player ID
+        "valuations": user_valuations
+    })
+
+    # Add bot players with uniform valuations
+    for player_id in range(2, num_bot_players + 2):
         valuation_data["players"].append({
             "id": player_id,
-            "valuations": new_player_valuations
+            "valuations": [bot_valuation for _ in range(num_projects)]  # Uniform valuation for each bot
         })
 
     # Save the updated valuation matrix back to the JSON file
