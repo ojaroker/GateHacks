@@ -1,9 +1,13 @@
 import json
 import random
+import sys
 from game_logic import Game
 from ui import UserInterface
+from PyQt5.QtWidgets import QApplication
 
 def main():
+    app = QApplication(sys.argv)
+
     # Prompt user for the number of bot players
     num_bot_players = 0
     while True:
@@ -16,28 +20,12 @@ def main():
             print(f"Invalid input: {e}. Please enter a non-negative integer.")
 
     # Prompt user for the number of projects
-    # no actually make random number of projects <= num players
-    num_projects = 0
-    while True:
-        try:
-            num_projects = int(input("Enter the number of projects: "))
-            if num_projects <= 0:
-                raise ValueError("The number of projects must be positive.")
-            if num_projects > (num_bot_players+1):
-                raise ValueError(f"The number of projects ({num_projects}) cannot exceed the number of players ({num_bot_players+1}).")
-            break  # Exit loop if valid input is given
-        except ValueError as e:
-            print(f"Invalid input: {e}. Please enter a positive integer.")
-
+    num_projects = random.randint(1, num_bot_players + 1)  # Random number of projects <= num players
+    print(f"Randomly selected number of projects: {num_projects}")
 
     # Generate random success probabilities for each project
-    success_probabilities = [round(random.uniform(0.1, 1.0), 2) for _ in range(num_projects)]  # Random probabilities rounded to 2 decimal places
+    success_probabilities = [round(random.uniform(0.1, 1.0), 2) for _ in range(num_projects)]
     
-    # Inform the user of the success probabilities
-    print("Success probabilities for each project:")
-    for i, p in enumerate(success_probabilities):
-        print(f"Project {i + 1}: {p}")
-
     # Load initial data
     with open('data/valuation_matrix.json', 'r') as file:
         valuation_data = json.load(file)
@@ -66,7 +54,7 @@ def main():
                 print(f"Invalid input: {e}. Please enter a numeric value.")
 
     # Set uniform valuations for bots
-    bot_valuation = 1.0  # Example: uniform valuation for each bot (could be adjusted as needed)
+    bot_valuation = 1.0  # Example: uniform valuation for each bot
 
     # Update the valuation matrix
     valuation_data["players"] = []  # Reset existing players
@@ -99,8 +87,11 @@ def main():
     game = Game(valuation_data, success_probabilities, num_bot_players + 1)
     ui = UserInterface(game)
 
-    # Start the game loop
-    ui.start()
+    # Show the UI
+    ui.show()
+    
+    # Start the application event loop
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
