@@ -1,15 +1,8 @@
+import json
 from game_logic import Game
 from ui import UserInterface
-import json
 
 def main():
-    # Load initial data
-    with open('data/valuation_matrix.json', 'r') as file:
-        valuation_data = json.load(file)
-    
-    with open('data/success_probabilities.json', 'r') as file:
-        success_probabilities = json.load(file)
-
     # Prompt user for the number of bot players
     num_bot_players = 0
     while True:
@@ -24,7 +17,27 @@ def main():
     # Total players include the human player
     num_players = num_bot_players + 1  # Assuming 1 human player
 
-    # Initialize game and UI
+    # Load initial data
+    with open('data/valuation_matrix.json', 'r') as file:
+        valuation_data = json.load(file)
+
+    # Update the valuation matrix based on the number of players
+    valuation_data["players"] = valuation_data["players"][:num_players]  # Trim to the desired number of players
+
+    # If there are not enough players in the existing data, add new players
+    for player_id in range(len(valuation_data["players"]) + 1, num_players + 1):
+        # Create a new player with random valuations (you can customize this)
+        new_player_valuations = [1 / len(valuation_data["projects"]) for _ in valuation_data["projects"]]  # Equal distribution
+        valuation_data["players"].append({
+            "id": player_id,
+            "valuations": new_player_valuations
+        })
+
+    # Save the updated valuation matrix back to the JSON file
+    with open('data/valuation_matrix.json', 'w') as file:
+        json.dump(valuation_data, file, indent=4)
+
+    # Initialize the game and UI
     game = Game(valuation_data, success_probabilities, num_players)
     ui = UserInterface(game)
 
