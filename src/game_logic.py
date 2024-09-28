@@ -108,7 +108,26 @@ class Game:
         
         return allocations
 
+    
     def get_bot_allocations(self, player_id):
         num_projects = len(self.success_probabilities)
-        uniform_allocation = 1  # Example: allocate 1 token to each project for simplicity
-        return [uniform_allocation] * num_projects
+        total_tokens = self.num_players  # Total tokens to allocate is equal to the number of players
+
+        # Normalize success probabilities to sum to 1
+        normalized_probabilities = [p / sum(self.success_probabilities) for p in self.success_probabilities]
+
+        # Allocate tokens based on normalized probabilities
+        allocations = [int(total_tokens * prob) for prob in normalized_probabilities]
+
+        # Adjust the allocations to ensure the total equals the number of tokens
+        while sum(allocations) < total_tokens:
+            # Randomly increment allocation for one of the projects until it matches total_tokens
+            allocations[random.randint(0, num_projects - 1)] += 1
+
+        while sum(allocations) > total_tokens:
+            # Randomly decrement allocation for one of the projects until it matches total_tokens
+            project_to_decrement = random.randint(0, num_projects - 1)
+            if allocations[project_to_decrement] > 0:
+                allocations[project_to_decrement] -= 1
+        
+        return allocations
