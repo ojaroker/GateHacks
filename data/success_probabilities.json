@@ -1,0 +1,12 @@
+{
+    "projects": [
+        {
+            "id": 1,
+            "success_probability": 0.7
+        },
+        {
+            "id": 2,
+            "success_probability": 0.5
+        }
+    ]
+}
