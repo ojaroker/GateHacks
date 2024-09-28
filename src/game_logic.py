@@ -21,7 +21,8 @@ class Game:
         total_allocated = sum(allocations)
         min_allocation = len(allocations)  # Each project must receive at least 1 token
 
-        if total_allocated != sum(allocations) or total_allocated < min_allocation:
+        # Ensure total allocation equals the number of players and each project has at least 1 token
+        if total_allocated != self.num_players or total_allocated < min_allocation:
             print(f"Invalid allocation by Player {player_id}. Must allocate exactly {self.num_players} tokens, with at least 1 to each project.")
             return False  # Invalid allocation
 
@@ -59,12 +60,21 @@ class Game:
     def run_game(self):
         while True:
             self.play_round()
-            if self.current_round >= 5:  # Example: end after 5 rounds
+            if self.check_single_player_left():
+                print("Game over! Only one player left with tokens.")
                 break
 
         print("Final Scores:")
         for player_id, score in enumerate(self.player_scores):
             print(f"Player {player_id + 1}: {score} points")
+
+    def check_single_player_left(self):
+        active_players = 0
+        for player in self.valuation_data['players']:
+            if 'allocations' in player and sum(player['allocations']) > 0:
+                active_players += 1
+
+        return active_players <= 1  # Return True if only one or no active players left
 
     def get_human_allocations(self):
         allocations = []
@@ -74,8 +84,9 @@ class Game:
                     allocation = int(input(f"Allocate tokens to Project {j + 1} (1 token minimum): "))
                     if allocation < 1:
                         print("You must allocate at least 1 token to each project.")
-                    allocations.append(allocation)
-                    break
+                    else:
+                        allocations.append(allocation)
+                        break
                 except ValueError:
                     print("Invalid input. Please enter a numeric value.")
         
