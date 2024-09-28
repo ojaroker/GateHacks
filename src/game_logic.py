@@ -67,11 +67,21 @@ class Game:
 
 
     def run_game(self):
-        while True:
+        max_rounds = 5
+        round_count = 0
+        
+        while round_count < max_rounds:
             self.play_round()
+            round_count += 1
+            
+            # Check if there is only one player left with tokens
             if self.check_single_player_left():
                 print("Game over! Only one player left with tokens.")
                 break
+
+        # If max rounds reached without a single player left
+        if round_count == max_rounds:
+            print("Game over! Maximum rounds reached.")
 
 
     def check_single_player_left(self):

@@ -16,15 +16,19 @@ def main():
             print(f"Invalid input: {e}. Please enter a non-negative integer.")
 
     # Prompt user for the number of projects
+    # no actually make random number of projects <= num players
     num_projects = 0
     while True:
         try:
             num_projects = int(input("Enter the number of projects: "))
             if num_projects <= 0:
                 raise ValueError("The number of projects must be positive.")
+            if num_projects > (num_bot_players+1):
+                raise ValueError(f"The number of projects ({num_projects}) cannot exceed the number of players ({num_bot_players+1}).")
             break  # Exit loop if valid input is given
         except ValueError as e:
             print(f"Invalid input: {e}. Please enter a positive integer.")
+
 
     # Generate random success probabilities for each project
     success_probabilities = [round(random.uniform(0.1, 1.0), 2) for _ in range(num_projects)]  # Random probabilities rounded to 2 decimal places
