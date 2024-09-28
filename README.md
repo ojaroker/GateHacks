@@ -25,3 +25,5 @@ If project j succeeds, each player invested in it receives back the tokens they 
 ### Game Dynamics
 
 After each round, all projects are reset, and players allocate their tokens again based on their valuations.
+
+The game ends when there is only one player left with tokens.
